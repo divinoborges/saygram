@@ -1,20 +1,19 @@
 import type { Metadata } from "next";
-import { Analytics } from "@vercel/analytics/next";
 import { Roboto, Roboto_Mono } from "next/font/google";
 import { themeInitScript } from "@/lib/theme-pref";
 import "./globals.css";
 
+const isProd = process.env.NODE_ENV === "production";
+const basePath = isProd ? "/saygram" : "";
+
 const siteUrl =
   process.env.NEXT_PUBLIC_APP_URL ??
-  process.env.VERCEL_PROJECT_PRODUCTION_URL ??
-  process.env.VERCEL_URL ??
-  "http://localhost:3000";
+  (isProd ? "https://divinoborges.github.io" : "http://localhost:3000");
 
 const metadataBase = new URL(
   siteUrl.startsWith("http") ? siteUrl : `https://${siteUrl}`,
 );
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const asset = (path: string) => `${basePath}${path}`;
 
 const roboto = Roboto({
@@ -76,7 +75,6 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {children}
-        <Analytics />
       </body>
     </html>
   );
