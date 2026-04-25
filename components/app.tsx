@@ -9,8 +9,12 @@ import StatusBar, { SessionStatus } from "@/components/status-bar";
 import ToastHost from "@/components/toast-host";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { apiKeyStore, getStoredKey, useStoredKey } from "@/lib/api-key";
-import { buildInstructions, TOOLS } from "@/lib/config";
-import { REALTIME_CALLS_URL } from "@/lib/constants";
+import { buildInstructions, TOOLS, VOICE } from "@/lib/config";
+import {
+  MODEL,
+  REALTIME_CALLS_URL,
+  REALTIME_CLIENT_SECRETS_URL,
+} from "@/lib/constants";
 import { diagramStore, useDiagramCode } from "@/lib/diagram-store";
 import { dispatchDiagramTool } from "@/lib/diagram-tools";
 import {
@@ -56,7 +60,6 @@ export default function App() {
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
   const [apiKeyDialogReason, setApiKeyDialogReason] =
     useState<DialogReason>("manual");
-  const [serverHasEnvKey, setServerHasEnvKey] = useState<boolean | null>(null);
 
   // Hydrate the diagram, panel, and API key state from localStorage on mount.
   useEffect(() => {
@@ -91,26 +94,35 @@ export default function App() {
         setStatus("connecting");
 
         const userKey = getStoredKey();
-        const sessionResponse = await fetch("/api/session", {
-          headers: userKey
-            ? { Authorization: `Bearer ${userKey}` }
-            : undefined,
+        if (!userKey) {
+          setIsSessionStarted(false);
+          setStatus("disconnected");
+          setApiKeyDialogReason("no_key");
+          setApiKeyDialogOpen(true);
+          return;
+        }
+
+        const sessionResponse = await fetch(REALTIME_CLIENT_SECRETS_URL, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${userKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            expires_after: { anchor: "created_at", seconds: 600 },
+            session: {
+              type: "realtime",
+              model: MODEL,
+              audio: { output: { voice: VOICE } },
+            },
+          }),
+          cache: "no-store",
         });
 
         if (sessionResponse.status === 401) {
-          let errorCode: string | null = null;
-          try {
-            const body = await sessionResponse.json();
-            errorCode = body?.error ?? null;
-          } catch {
-            /* ignore */
-          }
-          if (errorCode === "no_key") setServerHasEnvKey(false);
           setIsSessionStarted(false);
           setStatus("disconnected");
-          setApiKeyDialogReason(
-            errorCode === "invalid_key" ? "invalid_key" : "no_key",
-          );
+          setApiKeyDialogReason("invalid_key");
           setApiKeyDialogOpen(true);
           return;
         }
@@ -119,16 +131,14 @@ export default function App() {
           throw new Error(await sessionResponse.text());
         }
 
-        const sessionSource = sessionResponse.headers.get("X-Session-Source");
-        if (sessionSource === "env") setServerHasEnvKey(true);
-        else if (sessionSource === "user") setServerHasEnvKey(false);
-
         const session: RealtimeClientSecret = await sessionResponse.json();
         const sessionToken = session.value;
         const sessionId = session.session?.id;
 
         if (!sessionToken) {
-          throw new Error("Realtime client secret is missing from /api/session");
+          throw new Error(
+            "Realtime client secret is missing from OpenAI response",
+          );
         }
 
         if (sessionId) {
@@ -446,7 +456,7 @@ export default function App() {
         <DiagramCanvas code={diagramCode} parseError={parseError} />
         <div className="absolute top-4 right-4 z-30">
           <ApiKeyButton
-            showRequiredBadge={!storedKey && serverHasEnvKey === false}
+            showRequiredBadge={!storedKey}
             onClick={() => {
               setApiKeyDialogReason("manual");
               setApiKeyDialogOpen(true);

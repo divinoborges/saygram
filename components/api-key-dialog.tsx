@@ -266,9 +266,8 @@ export default function ApiKeyDialog({
             color: "var(--md-sys-color-on-surface-variant)",
           }}
         >
-          Your key is stored only in this browser. It&apos;s sent to this app&apos;s
-          server only when you start a session, and forwarded to OpenAI to issue
-          a short-lived client secret.{" "}
+          Your key is stored only in this browser and sent directly to OpenAI to
+          issue a short-lived client secret when you start a session.{" "}
           <a
             href={KEYS_URL}
             target="_blank"
