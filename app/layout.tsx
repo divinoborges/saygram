@@ -14,6 +14,9 @@ const metadataBase = new URL(
   siteUrl.startsWith("http") ? siteUrl : `https://${siteUrl}`,
 );
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const asset = (path: string) => `${basePath}${path}`;
+
 const roboto = Roboto({
   variable: "--font-roboto",
   subsets: ["latin"],
@@ -33,28 +36,28 @@ export const metadata: Metadata = {
   description: "Build Mermaid diagrams by voice using the OpenAI Realtime API.",
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
-      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
-      { url: "/android-chrome-192x192.png", type: "image/png", sizes: "192x192" },
-      { url: "/android-chrome-512x512.png", type: "image/png", sizes: "512x512" },
+      { url: asset("/favicon.ico"), sizes: "any" },
+      { url: asset("/favicon-16x16.png"), type: "image/png", sizes: "16x16" },
+      { url: asset("/favicon-32x32.png"), type: "image/png", sizes: "32x32" },
+      { url: asset("/android-chrome-192x192.png"), type: "image/png", sizes: "192x192" },
+      { url: asset("/android-chrome-512x512.png"), type: "image/png", sizes: "512x512" },
     ],
-    shortcut: "/favicon.ico",
+    shortcut: asset("/favicon.ico"),
     apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: asset("/apple-touch-icon.png"), sizes: "180x180", type: "image/png" },
     ],
   },
-  manifest: "/site.webmanifest",
+  manifest: asset("/site.webmanifest"),
   openGraph: {
     title: "Saygram",
     description: "Build Mermaid diagrams by voice using the OpenAI Realtime API.",
-    images: ["/screenshot.png"],
+    images: [asset("/screenshot.png")],
   },
   twitter: {
     card: "summary_large_image",
     title: "Saygram",
     description: "Build Mermaid diagrams by voice using the OpenAI Realtime API.",
-    images: ["/screenshot.png"],
+    images: [asset("/screenshot.png")],
   },
 };
 
