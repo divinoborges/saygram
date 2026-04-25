@@ -1,0 +1,16 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Next.js 15, React 19, TypeScript, TailwindCSS 3, Mermaid 11, Material Web (M3)
+  We use conventional commits (feat, fix, refactor, docs, ci, etc.)
+  Domain: Voice Mermaid Builder — build/edit Mermaid diagrams by voice via the OpenAI Realtime API over WebRTC, using function calling (set_diagram, patch_diagram)
+  Key surfaces: lib/config.ts (model prompt/voice), lib/diagram-tools.ts (tool surface), lib/m3-theme.ts (Material 3 theming), /api/session (mints short-lived Realtime client secret)
+  Persistence: localStorage only (diagram, side-panel layout, optional per-visitor API key); no server-side storage of keys
+  i18n: language-agnostic — assistant replies in whatever language the user spoke
+
+rules:
+  tasks:
+    - Always include a final task group for committing changes
+    - The final group must create atomic commits using conventional commits format
+    - Each logical change should be a separate commit (e.g., one per algorithm, one per feature)
+    - "Example: ## N. Commit\n- [ ] N.1 Create atomic commit(s) using conventional commits (e.g., feat: add X algorithm)"
